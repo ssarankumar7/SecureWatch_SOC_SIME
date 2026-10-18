@@ -68,8 +68,8 @@ securewatch/
 
 ## Phase status
 
-- **Implemented:** npm workspace, TypeScript web and API packages, environment validation, MongoDB connection lifecycle, local authenticated MongoDB Compose service, API health endpoints, Helmet, CORS allowlist, JSON size limit, global rate limit, responsive security and administrator preview screens, and a read-only Python Linux agent. The live intake verifies per-agent HMAC signatures, timestamp freshness, and replay nonces, stores the latest host snapshot, and creates daily-deduplicated alerts for SSH authentication bursts and high sudo volume.
-- **Demo mode:** with `DEMO_MODE=true`, the local API serves synthetic Linux, network, directory, account, and endpoint-file records and keeps changes in memory. It does not connect to MongoDB, an identity provider, Linux hosts, package managers, or networks. Approvals only change the preview request status; they do not execute endpoint actions. Evidence uploads are stored in API memory and cleared when the API restarts.
+- **Implemented:** npm workspace, TypeScript web and API packages, environment validation, MongoDB connection lifecycle, local authenticated MongoDB Compose service, API health endpoints, Helmet, CORS allowlist, JSON size limit, global rate limit, responsive security and administrator preview screens, and a read-only Python Linux agent. The live intake verifies per-agent HMAC signatures, timestamp freshness, and replay nonces, stores the latest host snapshot, and creates daily-deduplicated alerts for SSH authentication bursts and high sudo volume. Demo mode also includes rate-limited, structured AI triage for synthetic alerts.
+- **Demo mode:** with `DEMO_MODE=true`, the local API serves synthetic Linux, network, directory, account, and endpoint-file records and keeps changes in memory. Optional AI alert triage analyzes synthetic findings only. The preview does not connect to MongoDB, an identity provider, Linux hosts, package managers, or networks. Approvals only change the preview request status; they do not execute endpoint actions. Evidence uploads are stored in API memory and cleared when the API restarts.
 - **Planned:** authenticated users and enforced RBAC, live report and alert browsing in the dashboard, general event search, configurable detection rules, alert and incident workflows, WebSockets, durable administrative audit records, and deployment hardening. Remote host changes (user control, patch installation, and file quarantine) are not implemented; they require a trusted action protocol, constrained policy, and protected approval/audit workflows.
 
 The dashboard and admin console remain local product previews, not live monitoring or identity-management services. The agent can send live snapshots and privacy-minimized security aggregates to the authenticated intake, but the dashboard still shows synthetic alerts and does not display stored live reports or alerts. The agent intake requires a TLS reverse proxy for remote clients; keep MongoDB private and do not expose the raw API listener.
@@ -188,6 +188,17 @@ npm run dev:web
 ```
 
 The preview API starts at `http://127.0.0.1:4000`; the dashboard runs at `http://127.0.0.1:5173`. Demo mode serves `GET /api/v1/dashboard/summary` with synthetic data and is rejected when `NODE_ENV=production`. For database-backed development, keep `DEMO_MODE=false`, configure MongoDB, then start the API normally.
+
+### Optional AI alert triage
+
+To enable the AI SOC copilot in the simulated endpoint alert queue, add an OpenAI API key to the API's `.env` file:
+
+```dotenv
+OPENAI_API_KEY=your_server_side_api_key
+OPENAI_MODEL=gpt-6-astra
+```
+
+Restart the API, open a sample alert, and choose **AI triage**. The key is read by the API and is never sent to the browser. The copilot analyzes only the selected synthetic finding and returns an assessment, supporting signals, analyst checks, and conditional containment guidance. OpenAI response storage is disabled for this request. The analysis is advisory; verify it against trusted telemetry and require an authorized operator for any response action. Without a configured key, the dashboard explains how to enable the feature. This preview is mounted only in demo mode; it does not browse stored live alerts.
 
 ### 4. Check the local API
 

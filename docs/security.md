@@ -29,6 +29,13 @@
 - Patch recommendations are read-only. The UI can add an item to a browser-local review queue, but does not invoke `apt`, SSH, a collector, or any remote action.
 - Keep demo mode bound to loopback. It is not an authenticated or production monitoring endpoint.
 
+## AI alert triage preview
+
+- The demo-only `/api/v1/copilot/analyze` route accepts a sample finding ID and resolves the finding from server-side synthetic data; it does not accept arbitrary prompts or alert text from the browser.
+- The API holds `OPENAI_API_KEY` and sends only the selected synthetic finding to the OpenAI Responses API. The request sets `store: false`, constrains the response to a schema, limits calls to eight per minute per client IP, and never exposes provider errors or credentials to the browser.
+- The model has no tools or host access. Its assessment is advisory and may be wrong; analysts must validate evidence and approve any containment outside this preview. The route is not mounted in connected mode because browser authentication, authorization, and live alert browsing are not yet implemented.
+- Configure the key only in the API environment, never in a `VITE_*` variable or browser bundle. Treat any future real alert fields sent to a model as sensitive telemetry and review data handling and organizational policy before enabling that workflow.
+
 ## Administrator operations preview
 
 - The demo-only `/api/v1/admin-preview` router is mounted only when `DEMO_MODE=true`. It serves synthetic workspace users, Linux accounts, and selected endpoint-file records, and keeps edits, requests, activity entries, and uploaded evidence in process memory.

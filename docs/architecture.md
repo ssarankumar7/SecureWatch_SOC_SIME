@@ -13,6 +13,7 @@
 
 ```text
 Browser dashboard ──GET /api/v1/dashboard/summary──▶ Express middleware ──demo mode──▶ synthetic payload
+Browser alert queue ──POST /api/v1/copilot/analyze──▶ demo-only copilot ──Responses API (store=false)──▶ structured triage
 Browser health page ──GET /api/v1/health───────────▶ Express middleware ──readiness──▶ MongoDB ping
 Linux agent ──HTTPS POST /api/v1/agents/report + HMAC──▶ Express middleware ──connected mode──▶ MongoDB latest snapshot
                                                                                          └─▶ fixed rules ──▶ daily-deduplicated alerts
@@ -30,6 +31,7 @@ In regular mode, the API connects to MongoDB and creates its agent report/replay
 | `alerts` | Daily-deduplicated endpoint alerts now; assignment, review workflow, and notes later |
 | `incidents` | Alert associations, investigation timeline, closure and resolution |
 | `agents` | Per-agent HMAC authentication, replay protection, latest read-only host snapshot, security aggregates, and alert creation |
+| `copilot` | Demo-only, rate-limited AI triage for synthetic findings; validates structured model output and has no host-action tools |
 | `collectors` | Future enrollment, registration, source identity, heartbeat and health workflows |
 | `reports` | Aggregations and safe CSV export |
 | `audit` | Append-oriented records for administrative and workflow changes |

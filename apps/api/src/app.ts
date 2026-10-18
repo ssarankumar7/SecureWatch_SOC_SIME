@@ -7,6 +7,7 @@ import { getDatabaseStatus } from './config/database.js';
 import { createHealthRouter } from './modules/health/health.router.js';
 import { createDemoDashboardRouter } from './modules/dashboard/demo-dashboard.router.js';
 import { createAdminPreviewRouter } from './modules/admin-preview/admin-preview.router.js';
+import { createDemoCopilotRouter } from './modules/copilot/copilot.router.js';
 import { captureRawBody, createAgentRouter } from './modules/agents/agent.router.js';
 import { errorHandler, notFoundHandler } from './shared/http-errors.js';
 
@@ -40,6 +41,7 @@ export function createApp(databaseProbe = getDatabaseStatus): express.Express {
   app.use('/api/v1/health', createHealthRouter(databaseProbe));
   if (env.DEMO_MODE) {
     app.use('/api/v1/dashboard', createDemoDashboardRouter());
+    app.use('/api/v1/copilot', createDemoCopilotRouter());
     app.use('/api/v1/admin-preview', createAdminPreviewRouter());
   } else {
     app.use('/api/v1/agents', createAgentRouter());

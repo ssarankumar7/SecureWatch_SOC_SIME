@@ -26,6 +26,8 @@ const environmentSchema = z.object({
   API_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().min(1_000).default(60_000),
   API_RATE_LIMIT_MAX: z.coerce.number().int().min(1).default(300),
   AGENT_KEYS_JSON: agentKeysConfig,
+  OPENAI_API_KEY: z.string().trim().optional().transform((value) => value || undefined),
+  OPENAI_MODEL: z.string().trim().min(1).max(128).default('gpt-6-astra'),
 });
 
 const parsedEnvironment = environmentSchema.safeParse(process.env);

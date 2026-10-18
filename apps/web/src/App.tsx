@@ -67,6 +67,7 @@ type LoadState = 'loading' | 'ready' | 'unavailable';
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:4000/api/v1';
 const DashboardActivityChart = lazy(() => import('./DashboardActivityChart'));
 const PatchReviewDialog = lazy(() => import('./PatchReviewDialog'));
+const SocCopilotDialog = lazy(() => import('./SocCopilotDialog'));
 const AdminOperationsPanel = lazy(() => import('./AdminOperationsPanel'));
 
 const navItems = [
@@ -86,6 +87,7 @@ export default function App() {
   const [hostFilter, setHostFilter] = useState<'all' | HostState>('all');
   const [severityFilter, setSeverityFilter] = useState<'all' | Severity>('all');
   const [selectedPatch, setSelectedPatch] = useState<DashboardSummary['patches'][number] | null>(null);
+  const [selectedFinding, setSelectedFinding] = useState<DashboardSummary['findings'][number] | null>(null);
   const [queuedPatches, setQueuedPatches] = useState<string[]>([]);
 
   const refresh = useCallback(async (signal?: AbortSignal) => {
@@ -235,7 +237,7 @@ export default function App() {
                 <button className="text-button" type="button" onClick={() => document.getElementById('detection-list')?.scrollIntoView({ behavior: 'smooth' })}>View all <span>↗</span></button>
               </div>
               <div className="mini-detection-list">
-                {(dashboard?.findings.slice(0, 3) ?? []).map((finding) => <DetectionRow key={finding.id} finding={finding} compact />)}
+                {(dashboard?.findings.slice(0, 3) ?? []).map((finding) => <DetectionRow key={finding.id} finding={finding} compact onAnalyze={setSelectedFinding} />)}
                 {!dashboard && <div className="panel-placeholder">Detection signals will load from the API.</div>}
               </div>
               <div className="panel-bottom-link"><a href="#detection-list">Open detection queue <span>→</span></a><span className="signal-note"><i /> SIMULATION</span></div>
@@ -272,7 +274,7 @@ export default function App() {
                 <label className="select-wrap"><span className="sr-only">Filter detections by severity</span><select value={severityFilter} onChange={(event) => setSeverityFilter(event.target.value as 'all' | Severity)}><option value="all">All severities</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select><span>⌄</span></label>
               </div>
               <div className="full-detection-list">
-                {filteredFindings.map((finding) => <DetectionRow key={finding.id} finding={finding} />)}
+                {filteredFindings.map((finding) => <DetectionRow key={finding.id} finding={finding} onAnalyze={setSelectedFinding} />)}
                 {filteredFindings.length === 0 && dashboard && <div className="panel-placeholder">No findings match this severity filter.</div>}
                 {!dashboard && <div className="panel-placeholder">No live detections. Enable demo mode to preview sample signals.</div>}
               </div>
@@ -305,6 +307,7 @@ export default function App() {
         </main>
 
         <Suspense fallback={null}><PatchReviewDialog selectedPatch={selectedPatch} inReviewQueue={Boolean(selectedPatch && queuedPatches.includes(selectedPatch.id))} onClose={() => setSelectedPatch(null)} onAddToReview={() => selectedPatch && queuePatchForReview(selectedPatch.id)} /></Suspense>
+        <Suspense fallback={null}><SocCopilotDialog finding={selectedFinding} onClose={() => setSelectedFinding(null)} /></Suspense>
     </div>
   );
 }
@@ -318,14 +321,14 @@ function ResourceValue({ value }: { value: number }) {
   return <span className="resource-cell"><span className={`resource-bar ${tone}`}><i style={{ width: `${value}%` }} /></span><small className={tone}>{value}%</small></span>;
 }
 
-function DetectionRow({ finding, compact = false }: { finding: DashboardSummary['findings'][number]; compact?: boolean }) {
+function DetectionRow({ finding, compact = false, onAnalyze }: { finding: DashboardSummary['findings'][number]; compact?: boolean; onAnalyze: (finding: DashboardSummary['findings'][number]) => void }) {
   return <div className={`detection-row ${compact ? 'compact' : ''}`}>
     <span className={`severity-mark ${finding.severity}`}><i /></span>
     <div className="detection-main"><div className="detection-title-row"><strong>{finding.title}</strong><span className={`severity-label ${finding.severity}`}>{finding.severity}</span></div>
       <p>{finding.description}</p>
       <div className="detection-meta"><span><span className="meta-icon">⌘</span>{finding.host}</span><span><span className="meta-icon">⇢</span>{finding.source}</span><span>{relativeTime(finding.observedAt)}</span></div>
     </div>
-    {!compact && <button type="button" className="row-more" aria-label={`More options for ${finding.title}`}>•••</button>}
+    <div className="detection-actions"><button type="button" className="ai-triage-button" onClick={() => onAnalyze(finding)} aria-label={`Analyze ${finding.title} with AI`}><span>✳</span><span>AI triage</span></button>{!compact && <button type="button" className="row-more" aria-label={`More options for ${finding.title}`}>•••</button>}</div>
   </div>;
 }
 

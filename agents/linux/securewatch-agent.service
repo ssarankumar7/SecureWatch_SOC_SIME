@@ -1,0 +1,37 @@
+[Unit]
+Description=SecureWatch read-only Linux endpoint monitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=securewatch-agent
+Group=securewatch-agent
+ExecStart=/usr/bin/python3 /opt/securewatch-agent/securewatch_agent.py --config /etc/securewatch-agent/agent.json
+Restart=on-failure
+RestartSec=15s
+TimeoutStartSec=30s
+TimeoutStopSec=10s
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectHostname=true
+ProtectClock=true
+ProtectProc=invisible
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallArchitectures=native
+ReadOnlyPaths=/etc/passwd /etc/os-release /proc /sys
+
+[Install]
+WantedBy=multi-user.target

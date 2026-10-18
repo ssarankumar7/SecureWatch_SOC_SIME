@@ -1,0 +1,6 @@
+{
+  "agent_id": "customer-a-host-001",
+  "server_url": "https://securewatch.example.com",
+  "shared_secret_hex": "REPLACE_WITH_64_HEX_CHARACTERS",
+  "interval_seconds": 60
+}
